@@ -6,14 +6,13 @@
 //
 
 import SwiftUI
+import UIKit
 
 struct ContentView: View {
     var body: some View {
         ZStack {
-            Color.black.edgesIgnoringSafeArea(.all) // Background color
-            ParticleEmitterView()
-                .frame(width: 300, height: 300) // Adjust size
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+            Color.black.edgesIgnoringSafeArea(.all)
+            CAWand()
         }
     }
 }
@@ -21,3 +20,4 @@ struct ContentView: View {
 #Preview {
     ContentView()
 }
+

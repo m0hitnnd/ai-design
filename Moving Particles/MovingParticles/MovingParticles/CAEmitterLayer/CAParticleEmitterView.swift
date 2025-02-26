@@ -7,34 +7,81 @@
 import SwiftUI
 import UIKit
 
-struct ParticleEmitterView: UIViewRepresentable {
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView()
-        view.backgroundColor = .clear
-        addParticleEmitter(to: view)
-        return view
+struct CAWandEmitterRepresentable: UIViewRepresentable {
+    func makeUIView(context: Context) -> CAWandEmitterView {
+        CAWandEmitterView()
     }
+    func updateUIView(_ uiView: CAWandEmitterView, context: Context) {}
+}
 
-    func updateUIView(_ uiView: UIView, context: Context) {}
 
-    private func addParticleEmitter(to view: UIView) {
-        let emitter = CAEmitterLayer()
-        emitter.emitterPosition = CGPoint(x: view.bounds.midX, y: view.bounds.midY) // Center position
-        emitter.emitterShape = .sphere // Emit in a sphere-like shape
-        emitter.emitterSize = CGSize(width: 150, height: 150) // Adjust size of emission area
-
+class CAWandEmitterView: UIView {
+    private let wandImageView = UIImageView(image: UIImage(named: "wand"))
+    let emitterLayer = CAEmitterLayer()
+    
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        setupWand()
+        setupEmitter()
+    }
+    
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+        setupWand()
+        setupEmitter()
+    }
+    
+    private func setupWand() {
+        // 1. Configure the wand image
+        wandImageView.contentMode = .scaleAspectFit
+        addSubview(wandImageView)
+    }
+    
+    private func setupEmitter() {
+        emitterLayer.emitterShape = .point
+        emitterLayer.emitterMode = .outline
+        emitterLayer.renderMode = .additive
+        // Configure emitterCells here...
         let cell = CAEmitterCell()
-        cell.contents = coloredImage(named: "circle.fill", color: .white)?.cgImage // Use a circle shape
-        cell.birthRate = 100 // Number of particles per second
-        cell.lifetime = 5.0 // How long particles live
-        cell.velocity = 40 // Particle speed
+        cell.contents = coloredImage(named: "circle.fill", color: .systemYellow.withAlphaComponent(0.6))?.cgImage // Use a circle shape
+        cell.birthRate = 15 // Number of particles per second
+        cell.lifetime = 2 // How long particles live
+        cell.velocity = 15 // Particle speed
         cell.scale = 0.02 // Particle size
         cell.alphaSpeed = -0.1 // Fades out over time
-        cell.color = UIColor.white.cgColor
-        cell.emissionRange = .pi * 2 // Emit in all directions
-
-        emitter.emitterCells = [cell]
-        view.layer.addSublayer(emitter)
+        cell.emissionLongitude = (5 * .pi) / 4 // center of emission range
+        cell.emissionRange = (.pi / 4 )
+        
+        let cell1 = CAEmitterCell()
+        cell1.contents = coloredImage(named: "circle.fill", color: .white)?.cgImage // Use a circle shape
+        cell1.birthRate = 15 // Number of particles per second
+        cell1.lifetime = 2 // How long particles live
+        cell1.velocity = 15 // Particle speed
+        cell1.scale = 0.02 // Particle size
+        cell1.alphaSpeed = -0.1 // Fades out over time
+        cell1.emissionLongitude = (5 * .pi) / 4 // center of emission range
+        cell1.emissionRange = (.pi / 2 )
+        
+        emitterLayer.emitterCells = [cell, cell1]
+        layer.addSublayer(emitterLayer)
+    }
+    
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        wandImageView.frame = bounds
+        
+        let tipX = wandImageView.bounds.maxX * 0.05   // 5% from left
+        let tipY = wandImageView.bounds.minY   // 0% from top
+        
+        print("bounds - \(wandImageView.bounds)")
+        print("tipX - \(tipX), tipY - \(tipY)")
+        
+        let tipPointInWandView = wandImageView.convert(CGPoint(x: tipX, y: tipY), to: self)
+        
+        print("tipPointInWandView - \(tipPointInWandView)")
+        
+        emitterLayer.frame = bounds
+        emitterLayer.emitterPosition = tipPointInWandView
     }
     
     func coloredImage(named: String, color: UIColor) -> UIImage? {
@@ -51,5 +98,6 @@ struct ParticleEmitterView: UIViewRepresentable {
         
         return coloredImage
     }
-
 }
+
+
